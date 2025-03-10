@@ -318,7 +318,7 @@ module tt_um_spacewar (
         x_rel = (pix_x - x0) >> 1;  // Scale coordinates
         y_rel = (pix_y - y0) >> 1;
         // Copied from edits by Urish, edits are needed to make this work on an FPGA
-        glyph_shifted = glyph >> ((7 - y_rel) * 8);
+        glyph_shifted = glyph >> ((7 - y_rel) << 3);
         row = glyph_shifted[7:0];
         glyph_active = row[7-x_rel];
       end else begin
