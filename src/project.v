@@ -101,7 +101,7 @@ module tt_um_spacewar (
   );
 
   // Gamepad Pmod
-  wire inp_b, inp_y, inp_select, inp_start, inp_up, inp_down, inp_left, inp_right, inp_a, inp_x, inp_l, inp_r;
+  wire inp_b, inp_y, inp_select, inp_start, inp_up, inp_down, inp_left, inp_right, inp_a, inp_x, inp_l, inp_r, gamepad_is_present;
 
   gamepad_pmod_single driver (
       // Inputs:
@@ -123,7 +123,7 @@ module tt_um_spacewar (
       .x(inp_x),
       .l(inp_l),
       .r(inp_r),
-      .is_present()
+      .is_present(gamepad_is_present)
   );
 
   // Colors
