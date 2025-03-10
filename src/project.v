@@ -122,7 +122,8 @@ module tt_um_spacewar (
       .a(inp_a),
       .x(inp_x),
       .l(inp_l),
-      .r(inp_r)
+      .r(inp_r),
+      .is_present()
   );
 
   // Colors
