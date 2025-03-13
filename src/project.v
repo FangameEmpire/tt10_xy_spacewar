@@ -17,8 +17,9 @@ module tt_um_spacewar (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+  assign uio_out[6:0] = 0;
+  assign uio_oe[6:0]  = 0;
+  assign uio_oe[7]  = 1;
 
   // List all unused inputs to prevent warnings
   wire _unused = &{ena, clk, rst_n, 1'b0};
@@ -99,6 +100,106 @@ module tt_um_spacewar (
       .hpos(pix_x),
       .vpos(pix_y)
   );
+
+  // Audio data
+  reg[3:0] current_note;
+  reg[6:0] current_position;
+  reg[21:0] next_note_timer;
+  reg[17:0] PWM_timer, PWM_timer_limit;
+
+  // Note timing
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      next_note_timer <= 0;
+      current_position <= 0;
+    end else begin
+      if (next_note_timer == 3375000) begin
+        next_note_timer <= 0;
+        current_position <= current_position + 1;
+      end else begin
+        next_note_timer <= next_note_timer + 1;
+        current_position <= current_position;
+      end
+    end
+  end
+
+  // PWM timing
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      PWM_timer <= 0;
+    end else begin
+      if (PWM_timer == PWM_timer_limit) PWM_timer <= 0;
+      else PWM_timer <= PWM_timer + 1;
+    end
+  end
+
+  // Convert notes to PWM frequencies
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      PWM_timer_limit <= 0;
+    end else begin
+      case (current_note) 
+        4'h0: PWM_timer_limit <= 41667;
+        4'h1: PWM_timer_limit <= 43748;
+        4'h2: PWM_timer_limit <= 45455;
+        4'h3: PWM_timer_limit <= 50000;
+        4'h4: PWM_timer_limit <= 55556;
+        4'h5: PWM_timer_limit <= 62500;
+        4'h6: PWM_timer_limit <= 71429;
+        4'h7: PWM_timer_limit <= 83333;
+        default: PWM_timer_limit <= 0;
+      endcase
+    end
+  end
+
+  // Determine current note
+  wire[7:0] do_note;
+  assign do_note[0] = (current_position == 7'd70) || (current_position == 7'd71) || (current_position == 7'd86) || (current_position == 7'd102) || (current_position == 7'd103);
+  assign do_note[1] = (current_position == 7'd69) || (current_position == 7'd76) || (current_position == 7'd77) || (current_position == 7'd85) || (current_position == 7'd101) || (current_position == 7'd108) || (current_position == 7'd109) || (current_position == 7'd126) || (current_position == 7'd127);
+  assign do_note[2] = (current_position == 7'd6) || (current_position == 7'd7) || (current_position == 7'd22) || (current_position == 7'd38) || (current_position == 7'd39) || (current_position == 7'd68) || (current_position == 7'd75) || (current_position == 7'd78) || (current_position == 7'd79) || (current_position == 7'd84) || (current_position == 7'd100) || (current_position == 7'd107) || (current_position == 7'd110) || (current_position == 7'd111) || (current_position == 7'd125);
+  assign do_note[3] = (current_position == 7'd5) || (current_position == 7'd12) || (current_position == 7'd13) || (current_position == 7'd21) || (current_position == 7'd37) || (current_position == 7'd44) || (current_position == 7'd45) || (current_position == 7'd62) || (current_position == 7'd63) || (current_position == 7'd74) || (current_position == 7'd80) || (current_position == 7'd87) || (current_position == 7'd90) || (current_position == 7'd96) || (current_position == 7'd106) || (current_position == 7'd112) || (current_position == 7'd118) || (current_position == 7'd122) || (current_position == 7'd124);
+  assign do_note[4] = (current_position == 7'd4) || (current_position == 7'd11) || (current_position == 7'd14) || (current_position == 7'd15) || (current_position == 7'd20) || (current_position == 7'd36) || (current_position == 7'd43) || (current_position == 7'd46) || (current_position == 7'd47) || (current_position == 7'd61) || (current_position == 7'd65) || (current_position == 7'd66) || (current_position == 7'd67) || (current_position == 7'd72) || (current_position == 7'd73) || (current_position == 7'd81) || (current_position == 7'd82) || (current_position == 7'd83) || (current_position == 7'd88) || (current_position == 7'd89) || (current_position == 7'd91) || (current_position == 7'd92) || (current_position == 7'd93) || (current_position == 7'd94) || (current_position == 7'd95) || (current_position == 7'd97) || (current_position == 7'd98) || (current_position == 7'd99) || (current_position == 7'd104) || (current_position == 7'd105) || (current_position == 7'd113) || (current_position == 7'd116) || (current_position == 7'd117) || (current_position == 7'd119) || (current_position == 7'd120) || (current_position == 7'd121) || (current_position == 7'd123);
+  assign do_note[5] = (current_position == 7'd0) || (current_position == 7'd10) || (current_position == 7'd16) || (current_position == 7'd23) || (current_position == 7'd26) || (current_position == 7'd32) || (current_position == 7'd42) || (current_position == 7'd48) || (current_position == 7'd53) || (current_position == 7'd58) || (current_position == 7'd60) || (current_position == 7'd64) || (current_position == 7'd114) || (current_position == 7'd115);
+  assign do_note[6] = (current_position == 7'd1) || (current_position == 7'd2) || (current_position == 7'd3) || (current_position == 7'd8) || (current_position == 7'd9) || (current_position == 7'd17) || (current_position == 7'd18) || (current_position == 7'd19) || (current_position == 7'd24) || (current_position == 7'd25) || (current_position == 7'd27) || (current_position == 7'd28) || (current_position == 7'd29) || (current_position == 7'd30) || (current_position == 7'd31) || (current_position == 7'd33) || (current_position == 7'd34) || (current_position == 7'd35) || (current_position == 7'd40) || (current_position == 7'd41) || (current_position == 7'd49) || (current_position == 7'd52) || (current_position == 7'd54) || (current_position == 7'd55) || (current_position == 7'd56) || (current_position == 7'd57) || (current_position == 7'd59);
+  assign do_note[7] = (current_position == 7'd50) || (current_position == 7'd51);
+
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      current_note <= 0;
+    end else begin
+      if (do_note[0]) begin
+        current_note <= 4'h0;
+      end else if (do_note[1]) begin
+        current_note <= 4'h1;
+      end else if (do_note[2]) begin
+        current_note <= 4'h2;
+      end else if (do_note[3]) begin
+        current_note <= 4'h3;
+      end else if (do_note[4]) begin
+        current_note <= 4'h4;
+      end else if (do_note[5]) begin
+        current_note <= 4'h5;
+      end else if (do_note[6]) begin
+        current_note <= 4'h6;
+      end else if (do_note[7]) begin
+        current_note <= 4'h7;
+      end else begin
+        current_note <= 4'h8;
+      end
+    end
+  end
+
+  // Play audio
+  reg PWM_audio;
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      PWM_audio <= 0;
+    end else begin
+      if (PWM_timer == PWM_timer_limit) PWM_audio <= ~PWM_audio;
+      else PWM_audio <= PWM_audio;
+    end
+  end
+  assign uio_out[7] = PWM_audio;
 
   // Gamepad Pmod
   wire inp_b, inp_y, inp_select, inp_start, inp_up, inp_down, inp_left, inp_right, inp_a, inp_x, inp_l, inp_r, gamepad_is_present;
