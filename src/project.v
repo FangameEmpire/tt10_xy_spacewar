@@ -163,6 +163,7 @@ module tt_um_spacewar (
   assign do_note[6] = (current_position == 7'd1) || (current_position == 7'd2) || (current_position == 7'd3) || (current_position == 7'd8) || (current_position == 7'd9) || (current_position == 7'd17) || (current_position == 7'd18) || (current_position == 7'd19) || (current_position == 7'd24) || (current_position == 7'd25) || (current_position == 7'd27) || (current_position == 7'd28) || (current_position == 7'd29) || (current_position == 7'd30) || (current_position == 7'd31) || (current_position == 7'd33) || (current_position == 7'd34) || (current_position == 7'd35) || (current_position == 7'd40) || (current_position == 7'd41) || (current_position == 7'd49) || (current_position == 7'd52) || (current_position == 7'd54) || (current_position == 7'd55) || (current_position == 7'd56) || (current_position == 7'd57) || (current_position == 7'd59);
   assign do_note[7] = (current_position == 7'd50) || (current_position == 7'd51);
 
+  // Set current note
   always_ff @(posedge clk) begin
     if (~rst_n) begin
       current_note <= 0;
