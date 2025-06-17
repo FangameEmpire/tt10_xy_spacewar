@@ -1,0 +1,8 @@
+// Check if 
+module on_line_checker(en, reset, x_0, x_1, x_2, y_2, x_3, y_3, on_line);
+	// Ports
+	input en, reset;
+	input [4:0] x_0, x_1, x_2, y_2, x_3, y_3;
+	
+	
+endmodule // on_line_checker
