@@ -1,0 +1,105 @@
+module on_line_detector #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, in_segment, out_result);
+	// Ports
+	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
+	input in_segment;
+	output out_result;
+	
+	// Check line steepness (High if > 45 degrees)
+	wire steep;
+	steep_checker #(.WIDTH(5)) line_steepness_checker (in_ax, in_ay, in_cx, in_cy, steep);
+	
+	// Store line distances
+	wire [WIDTH * 2:0] dist_cur, dist_up_left, dist_down_right;
+	
+	// Use line steepness to determine up-down check or left-right check
+	
+	// Check distances
+	
+	// Check if the center point is the closest, including exactly on the line
+	
+	// Choose whether this point is on the line
+	wire on_a, on_c;
+	assign on_a = (in_bx == in_ax) && (in_by == in_ay);
+	assign on_c = (in_bx == in_cx) && (in_by == in_cy);
+
+endmodule // on_line_detector
+
+
+module between #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, out_between);
+	// Ports
+	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
+	output out_between;
+	
+	// Check if B is between A and C
+	wire x_abc, x_cba, y_abc, y_cba;
+	assign x_abc = (in_ax <= in_bx) & (in_bx <= in_cx);
+	assign x_cba = (in_ax >= in_bx) & (in_bx >= in_cx);
+	assign y_abc = (in_ay <= in_by) & (in_by <= in_cy);
+	assign y_cba = (in_ay >= in_by) & (in_by >= in_cy);
+	
+	// Determine output
+	assign out_between = (x_abc | x_cba) & (y_abc | y_cba);
+	
+endmodule  // between
+
+module steep_checker #(parameter WIDTH = 5) (in_x0, in_y0, in_x1, in_y1, out_steep);
+	// Ports
+	input [WIDTH - 1:0] in_x0, in_y0, in_x1, in_y1;
+	output out_steep;
+	
+	// Determine dx, dy
+	wire [WIDTH - 1:0] dx, dy;
+	abs #(.WIDTH(5)) abs_x (({1'b0, in_x1} - {1'b0, in_x0}), dx);
+	abs #(.WIDTH(5)) abs_y (({1'b0, in_y1} - {1'b0, in_y0}), dy);
+	
+	// Determine line steepness
+	assign out_steep = dy > dx;
+
+endmodule // steep_checker
+
+module sign_mismatch (in_signs, out_mismatch);
+	// Ports
+	input [2:0] in_signs;
+	output out_mismatch;
+	
+	// Check signs
+	wire all_0, all_1;
+	assign all_0 = ~|in_signs;
+	assign all_1 = &in_signs;
+	assign out_mismatch = ~(all_0 | all_1);
+
+endmodule // sign_mismatch
+
+module cross_product_length #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, out_length);
+	// Ports
+	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
+	output [2 * WIDTH:0] out_length;
+	
+	// Intermediate difference terms
+	wire [WIDTH:0] diff0, diff1, diff2, diff3;
+	assign diff0 = {1'b0, in_ax} - {1'b0, in_cx};
+	assign diff1 = {1'b0, in_cy} - {1'b0, in_by};
+	assign diff2 = {1'b0, in_ay} - {1'b0, in_cy};
+	assign diff3 = {1'b0, in_cx} - {1'b0, in_bx};
+	
+	// Products of differences
+	wire [2 * WIDTH:0] product0, product1;
+	assign product0 = diff0 * diff1;
+	assign product1 = diff2 * diff3;
+	
+	// Difference of products
+	assign out_length = product0 - product1;
+
+endmodule // cross_product_length
+
+module abs #(parameter WIDTH = 5) (in_signed, out_unsigned);
+	// Ports
+	input [WIDTH:0] in_signed;
+	output [WIDTH - 1:0] out_unsigned;
+	
+	// Negate if negative
+	wire [WIDTH:0] unsigned_result;
+	assign unsigned_result = (in_signed[WIDTH] ? -in_signed : in_signed);
+	assign out_unsigned = unsigned_result[WIDTH - 1:0];
+
+endmodule // abs
