@@ -42,7 +42,9 @@ module on_line_detector #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_c
 	assign b_exact = (dist_cur == 0);
 	
 	// Compare distances. If the center point is the closest, we might draw 
-	// this pixel.
+	// this pixel. We need one < and one <= in the distance comparison to
+	// account for perfect midpoints. Two < will not draw anything, and two <=
+	// Will draw both pixels. Keeping to the one-pixel rule is a style choice.
 	wire [WIDTH * 2 - 1:0] abs_dist_cur, abs_dist_up_left, abs_dist_down_right;
 	abs #(.WIDTH(WIDTH * 2)) abs_cur (dist_cur, abs_dist_cur);
 	abs #(.WIDTH(WIDTH * 2)) abs_ul (dist_up_left, abs_dist_up_left);
