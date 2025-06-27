@@ -70,8 +70,8 @@ endmodule // on_line_detector
 // Checks if point b is between a and c in both x and y
 module between #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, out_between);
 	// Ports
-	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
-	output out_between;
+	input wire [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
+	output wire out_between;
 	
 	// Check if B is between A and C
 	wire x_abc, x_cba, y_abc, y_cba;
@@ -81,7 +81,10 @@ module between #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy,
 	assign y_cba = (in_ay >= in_by) & (in_by >= in_cy);
 	
 	// Determine output
-	assign out_between = (x_abc | x_cba) & (y_abc | y_cba);
+	wire between_x, between_y;
+	assign between_x = (x_abc | x_cba);
+	assign between_y = (y_abc | y_cba);
+	assign out_between = between_x & between_y;
 	
 endmodule  // between
 
@@ -103,9 +106,9 @@ endmodule // steep_checker
 
 // Determines if there is a mix of 0 and 1 in the inputs. Good for two's
 // complement sign (MSB) mismatch.
-module mismatch (in_signs, out_mismatch);
+module mismatch #(parameter WIDTH = 3) (in_signs, out_mismatch);
 	// Ports
-	input [2:0] in_signs;
+	input [WIDTH - 1:0] in_signs;
 	output out_mismatch;
 	
 	// Check signs
@@ -122,18 +125,18 @@ endmodule // mismatch
 // Max value = +- ((2^WIDTH) - 1)^2. 5 bits -> Max = +- 961 -> 11 bits
 module cross_product_length #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, out_length);
 	// Ports
-	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
-	output [2 * WIDTH:0] out_length;
+	input wire [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
+	output wire [2 * WIDTH:0] out_length;
 	
 	// Intermediate difference terms
-	wire [WIDTH:0] diff0, diff1, diff2, diff3;
+	wire signed [WIDTH:0] diff0, diff1, diff2, diff3;
 	assign diff0 = {1'b0, in_ax} - {1'b0, in_cx};
 	assign diff1 = {1'b0, in_cy} - {1'b0, in_by};
 	assign diff2 = {1'b0, in_ay} - {1'b0, in_cy};
 	assign diff3 = {1'b0, in_cx} - {1'b0, in_bx};
 	
 	// Products of differences
-	wire [2 * WIDTH:0] product0, product1;
+	wire signed [2 * WIDTH:0] product0, product1;
 	assign product0 = diff0 * diff1;
 	assign product1 = diff2 * diff3;
 	
