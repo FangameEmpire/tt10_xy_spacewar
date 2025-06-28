@@ -17,7 +17,7 @@ module tt_um_spacewar (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uio_out[6:0] = 0;
+  assign uio_out[5:0] = 0;
   assign uio_oe[5:0]  = 0;
   assign uio_oe[7:6]  = 2'b11;
 
