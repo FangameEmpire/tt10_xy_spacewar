@@ -19,7 +19,7 @@ project:
   source_files:
     - "project.v"
     - "hvsync_generator.v"
-	- "on_line_detector.v"
+    - "on_line_detector.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 pinout:
