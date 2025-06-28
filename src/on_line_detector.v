@@ -1,8 +1,9 @@
 // Check if point b is on the line between points a and c. Makes no asumptions 
 // regarding the relative locations of points a and c. Fully combinational, 
-// includes two integer multipliers. Setting "in_segment" high checks whether 
+// includes six integer multipliers. Setting "in_segment" high checks whether 
 // point b is between points a and c in X and Y, while setting it low only 
-// checks for colinearity.
+// checks for colinearity. If A == C while in_segment is low, output will
+// always be high.
 module on_line_detector #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, in_segment, out_result);
 	// Ports
 	input [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
@@ -22,10 +23,10 @@ module on_line_detector #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_c
 	// There can only be one pixel per x value.
 	wire [WIDTH - 1:0] x_ul, x_dr, y_ul, y_dr, offset;
 	assign offset = {{(WIDTH - 1){1'b0}}, 1'b1};
-	assign x_ul = steep ? (in_bx  - 5'b00001) : in_bx;
-	assign x_dr = steep ? (in_bx  + 5'b00001) : in_bx;
-	assign y_ul = steep ? in_by : (in_by  - 5'b00001);
-	assign y_dr = steep ? in_by : (in_by  + 5'b00001);
+	assign x_ul = steep ? (in_bx  - offset) : in_bx;
+	assign x_dr = steep ? (in_bx  + offset) : in_bx;
+	assign y_ul = steep ? in_by : (in_by  - offset);
+	assign y_dr = steep ? in_by : (in_by  + offset);
 	
 	// Check pixel distances from the ideal line between a and c
 	cross_product_length #(.WIDTH(WIDTH)) cpl_mid (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, dist_cur);
@@ -88,7 +89,7 @@ module between #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy,
 	
 endmodule  // between
 
-// True if dy > dx, or slope > 1.
+// True if dy > dx, i.e. slope > 1.
 module steep_checker #(parameter WIDTH = 5) (in_x0, in_y0, in_x1, in_y1, out_steep);
 	// Ports
 	input [WIDTH - 1:0] in_x0, in_y0, in_x1, in_y1;
@@ -119,10 +120,12 @@ module mismatch #(parameter WIDTH = 3) (in_signs, out_mismatch);
 
 endmodule // mismatch
 
-// The signed length of the cross product
+// The signed length of the cross product.
 // (ax - cx) * (cy - by) - (ay - cy) * (cx - bx)
 // https://en.wikipedia.org/wiki/Cross_product#Computational_geometry
-// Max value = +- ((2^WIDTH) - 1)^2. 5 bits -> Max = +- 961 -> 11 bits
+// Max value = +- ((2^WIDTH) - 1)^2. 5 bits -> Max = +- 961 -> 11 bits.
+// Interestingly, this always returns 0 if A == C, as the line between A and C
+// is undefined.
 module cross_product_length #(parameter WIDTH = 5) (in_ax, in_ay, in_bx, in_by, in_cx, in_cy, out_length);
 	// Ports
 	input wire [WIDTH - 1:0] in_ax, in_ay, in_bx, in_by, in_cx, in_cy;
