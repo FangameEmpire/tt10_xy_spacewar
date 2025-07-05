@@ -3,7 +3,7 @@ project:
   title:        "XY Spacewar"      # Project title
   author:       "Nicklaus Thompson"      # Your name
   discord:      "fangameempire"      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  "A scaled-down Spacewar game with a VGA mode. Might be Asteroids instead."      # One line description of what your project does
+  description:  "A scaled-down Spacewar game with a VGA mode."      # One line description of what your project does
   language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
   clock_hz:     50000000       # Clock frequency in Hz (or 0 if not applicable)
 
