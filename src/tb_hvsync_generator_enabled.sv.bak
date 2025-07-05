@@ -1,0 +1,3 @@
+module hvsync_generator_enabled_testbench();
+	
+endmodule // hvsync_generator_enabled
